@@ -1,0 +1,37 @@
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
+    virtual-host: my_vhost
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    listener:
+      simple:
+        acknowledge-mode: auto # 表示消息确认方式，其有三种配置方式，分别是none、manual（手动ack）和auto；默认auto
+        concurrency: 5         # 最小的消费者数量
+        max-concurrency: 10    # 最大的消费者数量
+        prefetch: 3            # 指定一个请求能处理多少个消息，如果有事务的话，必须大于等于transaction数量.
+        # 重试机制：
+        #         eg: 最大重试次数为8 & 重试间隔1秒 & 间隔时间乘子2 & 最大间隔时间50秒  -- (最大重试次数包含初次消费)
+        #         初次消費
+        #         第1次：1秒
+        #         第2次：1*2=2秒
+        #         第3次：2*2=4秒
+        #         第4次：4*2=8秒
+        #         第5次：8*2=16秒
+        #         第6次：16*2=32秒
+        #         第7次：32*2=64秒 (由于设置最大间隔时间，因此这里为50秒 )
+        retry:
+          enabled: true          # 是否开启重试
+          max-attempts: 4        # 最大重试次数
+          max-interval: 50000    # 重试最大间隔时间
+          initial-interval: 1000 # 重试间隔（单位：毫秒）
+          multiplier: 2          # 间隔时间乘子，间隔时间*乘子=下一次的间隔时间，最大不能超过设置的最大间隔时间
+
+server:
+  port: 8001
+
+#rabbitmq-plugins enable rabbitmq_delayed_message_exchange
+#docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 -v D:\Docker\rabbitmq\data:/var/lib/rabbitmq --hostname my-rabbit --restart=always -e RABBITMQ_DEFAULT_VHOST=my_vhost -e RABBITMQ_DEFAULT_USER=admin -e RABBITMQ_DEFAULT_PASS=admin rabbitmq:3.9.12-management
